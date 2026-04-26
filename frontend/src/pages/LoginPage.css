@@ -1,0 +1,267 @@
+/* frontend/src/pages/LoginPage.css */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.login-root {
+  min-height: 100vh;
+  display: flex;
+  background: #f0f4ff;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+}
+
+/* ── Fondo izquierdo ── */
+.login-bg {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(145deg, #0a1628 0%, #0d2144 40%, #1a3a6e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.login-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 60px,
+      rgba(99, 179, 255, 0.05) 60px,
+      rgba(99, 179, 255, 0.05) 61px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 60px,
+      rgba(99, 179, 255, 0.05) 60px,
+      rgba(99, 179, 255, 0.05) 61px
+    );
+}
+
+.login-bg::after {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(56, 139, 253, 0.2) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.login-bg-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(80px, 12vw, 160px);
+  line-height: 0.9;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(99, 179, 255, 0.25);
+  letter-spacing: 4px;
+  user-select: none;
+  animation: fadeIn 1s ease forwards;
+}
+
+/* ── Panel derecho ── */
+.login-panel {
+  width: 420px;
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 48px;
+  position: relative;
+  animation: slideIn 0.5s ease forwards;
+  box-shadow: -8px 0 40px rgba(13, 33, 68, 0.12);
+}
+
+.login-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #1a6bdb, #63b3ff);
+}
+
+/* ── Logo ── */
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 48px;
+}
+
+.login-logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #1a6bdb, #4fa3f7);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.login-logo-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  color: #0a1628;
+  letter-spacing: 2px;
+}
+
+.login-logo-name strong {
+  color: #1a6bdb;
+}
+
+/* ── Títulos ── */
+.login-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  color: #0a1628;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: #7a90b0;
+  margin-bottom: 40px;
+  font-weight: 300;
+}
+
+/* ── Formulario ── */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-field label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #4a6080;
+}
+
+.login-field input {
+  padding: 14px 16px;
+  border: 1.5px solid #dce8f8;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: 'DM Sans', sans-serif;
+  color: #0a1628;
+  background: #f5f9ff;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.login-field input:focus {
+  border-color: #1a6bdb;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(26, 107, 219, 0.1);
+}
+
+.login-field input::placeholder {
+  color: #b8cfe8;
+}
+
+/* ── Error ── */
+.login-error {
+  background: #eef4ff;
+  border: 1px solid #c5d9f8;
+  border-left: 3px solid #1a6bdb;
+  color: #1a4a8a;
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* ── Botón ── */
+.login-btn {
+  margin-top: 8px;
+  padding: 16px;
+  background: linear-gradient(135deg, #1a6bdb, #4fa3f7);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  box-shadow: 0 4px 20px rgba(26, 107, 219, 0.35);
+}
+
+.login-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  box-shadow: 0 6px 24px rgba(26, 107, 219, 0.45);
+}
+
+.login-btn:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ── Spinner ── */
+.login-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Footer ── */
+.login-footer {
+  margin-top: 32px;
+  font-size: 12px;
+  color: #9ab0cc;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ── Animaciones ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .login-bg { display: none; }
+  .login-panel {
+    width: 100%;
+    padding: 48px 32px;
+  }
+}

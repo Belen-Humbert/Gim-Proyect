@@ -1,0 +1,50 @@
+// src/app.js
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
+// Rutas
+const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+
+const app = express();
+
+// ─────────────────────────────────────────
+// MIDDLEWARES GLOBALES
+// ─────────────────────────────────────────
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true,
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ─────────────────────────────────────────
+// RUTAS
+// ─────────────────────────────────────────
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// ─────────────────────────────────────────
+// MANEJO DE ERRORES GLOBAL
+// ─────────────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('Error no manejado:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Error interno del servidor',
+  });
+});
+
+// 404
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Ruta no encontrada' });
+});
+
+module.exports = app;

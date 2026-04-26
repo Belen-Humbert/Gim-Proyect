@@ -1,0 +1,181 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  TRAINER
+  MEMBER
+}
+
+enum PlanStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+// ─────────────────────────────────────────
+// MODELS
+// ─────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  firstName    String
+  lastName     String
+  dni          String?  @unique
+  phone        String?
+  role         Role     @default(MEMBER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relaciones
+  trainerProfile  Trainer?
+  userPlan        UserPlan?
+  userRoutines    UserRoutine[]
+  workoutLogs     WorkoutLog[]
+  createdBy       String?         // ID del admin que lo creó
+
+  @@map("users")
+}
+
+model Trainer {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  bio          String?
+  specialty    String?
+  photoUrl     String?
+  isVisible    Boolean  @default(true) // visible en landing
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routines     Routine[]
+
+  @@map("trainers")
+}
+
+model Plan {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  price        Float
+  durationDays Int      // duración en días (30, 60, 90...)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userPlans    UserPlan[]
+
+  @@map("plans")
+}
+
+model UserPlan {
+  id          String     @id @default(uuid())
+  userId      String     @unique
+  planId      String
+  status      PlanStatus @default(ACTIVE)
+  startDate   DateTime
+  endDate     DateTime
+  paidAt      DateTime?
+  notes       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan        Plan   @relation(fields: [planId], references: [id])
+
+  @@map("user_plans")
+}
+
+model Routine {
+  id          String   @id @default(uuid())
+  trainerId   String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  trainer      Trainer          @relation(fields: [trainerId], references: [id])
+  exercises    RoutineExercise[]
+  userRoutines UserRoutine[]
+
+  @@map("routines")
+}
+
+model RoutineExercise {
+  id          String    @id @default(uuid())
+  routineId   String
+  name        String
+  sets        Int?
+  reps        String?   // "10-12" o "Al fallo"
+  weight      String?   // "20kg" o "Corporal"
+  restSeconds Int?
+  notes       String?
+  day         DayOfWeek?
+  order       Int       @default(0)
+
+  routine     Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  @@map("routine_exercises")
+}
+
+model UserRoutine {
+  id          String   @id @default(uuid())
+  userId      String
+  routineId   String
+  assignedAt  DateTime @default(now())
+  isActive    Boolean  @default(true)
+
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine     Routine @relation(fields: [routineId], references: [id])
+
+  @@map("user_routines")
+}
+
+model WorkoutLog {
+  id          String    @id @default(uuid())
+  userId      String
+  day         DayOfWeek
+  date        DateTime
+  notes       String?
+  completed   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("workout_logs")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
