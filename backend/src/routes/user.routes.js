@@ -24,6 +24,7 @@ router.get('/', authenticate, isSuperAdmin, async (req, res) => {
         email: true,
         firstName: true,
         lastName: true,
+        dni: true,
         role: true,
         isActive: true,
         phone: true,
@@ -51,6 +52,7 @@ router.get('/:id', authenticate, isTrainer, async (req, res) => {
         email: true,
         firstName: true,
         lastName: true,
+         dni: true,
         role: true,
         isActive: true,
         phone: true,
@@ -76,11 +78,11 @@ router.get('/:id', authenticate, isTrainer, async (req, res) => {
 // PATCH /api/users/:id — Actualizar usuario (Super Admin)
 router.patch('/:id', authenticate, isSuperAdmin, async (req, res) => {
   try {
-    const { firstName, lastName, phone, isActive } = req.body;
+    const { firstName, lastName, phone, dni, isActive } = req.body;
 
     const user = await prisma.user.update({
       where: { id: req.params.id },
-      data: { firstName, lastName, phone, isActive },
+      data: { firstName, lastName, phone, dni, isActive },
       select: {
         id: true, email: true, firstName: true,
         lastName: true, role: true, isActive: true

@@ -41,22 +41,22 @@ async function main() {
     await prisma.plan.createMany({
       data: [
         {
-          name: 'Plan Mensual',
-          description: 'Acceso completo al gimnasio por 30 días',
-          price: 5000,
+          name: '3 Días por Semana',
+          description: 'Acceso al gimnasio 3 días a la semana',
+          price: 30000,
           durationDays: 30,
         },
         {
-          name: 'Plan Trimestral',
-          description: 'Acceso completo al gimnasio por 90 días',
-          price: 13000,
-          durationDays: 90,
+          name: 'Pase Libre',
+          description: 'Acceso ilimitado al gimnasio',
+          price: 35000,
+          durationDays: 30,
         },
         {
-          name: 'Plan Anual',
-          description: 'Acceso completo al gimnasio por 365 días',
-          price: 45000,
-          durationDays: 365,
+          name: 'Entrenamiento Personalizado',
+          description: 'Acceso ilimitado con entrenador personal asignado',
+          price: 40000,
+          durationDays: 30,
         },
       ]
     });
