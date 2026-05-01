@@ -12,12 +12,18 @@ const DashboardSuperAdmin = () => {
   const [users, setUsers] = useState([])
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('users')
+  const [activeTab, setActiveTab] = useState('dashboard')
+  const [search, setSearch] = useState('')
 
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [createForm, setCreateForm] = useState({ firstName: '', lastName: '', dni: '', phone: '', email: '', password: '', role: 'MEMBER' })
   const [createError, setCreateError] = useState('')
   const [createLoading, setCreateLoading] = useState(false)
+
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editForm, setEditForm] = useState({ id: '', firstName: '', lastName: '', dni: '', phone: '' })
+  const [editLoading, setEditLoading] = useState(false)
+  const [editError, setEditError] = useState('')
 
   const [showPlanModal, setShowPlanModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
@@ -30,10 +36,12 @@ const DashboardSuperAdmin = () => {
   const [newPassword, setNewPassword] = useState('')
   const [resetLoading, setResetLoading] = useState(false)
 
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [editForm, setEditForm] = useState({ id: '', firstName: '', lastName: '', dni: '', phone: '' })
-  const [editLoading, setEditLoading] = useState(false)
-  const [editError, setEditError] = useState('')
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [historyUser, setHistoryUser] = useState(null)
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteUser, setDeleteUser] = useState(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -62,14 +70,8 @@ const DashboardSuperAdmin = () => {
   const handleEdit = async (e) => {
     e.preventDefault(); setEditError(''); setEditLoading(true)
     try {
-      await api.patch(`/users/${editForm.id}`, {
-        firstName: editForm.firstName,
-        lastName: editForm.lastName,
-        dni: editForm.dni,
-        phone: editForm.phone,
-      })
-      setShowEditModal(false)
-      fetchData()
+      await api.patch(`/users/${editForm.id}`, { firstName: editForm.firstName, lastName: editForm.lastName, dni: editForm.dni, phone: editForm.phone })
+      setShowEditModal(false); fetchData()
     } catch (err) { setEditError(err.response?.data?.message || 'Error al actualizar usuario') }
     finally { setEditLoading(false) }
   }
@@ -98,13 +100,49 @@ const DashboardSuperAdmin = () => {
     finally { setResetLoading(false) }
   }
 
+  const handleDelete = async () => {
+    setDeleteLoading(true)
+    try {
+      await api.delete(`/users/${deleteUser.id}`)
+      setShowDeleteModal(false); fetchData()
+    } catch (err) { alert(err.response?.data?.message || 'Error al eliminar usuario') }
+    finally { setDeleteLoading(false) }
+  }
+
   const formatDate = (date) => {
     if (!date) return '—'
     return new Date(date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
   }
 
+  const getDaysUntilExpiry = (endDate) => {
+    if (!endDate) return null
+    const diff = new Date(endDate) - new Date()
+    return Math.ceil(diff / (1000 * 60 * 60 * 24))
+  }
+
+  const getExpiryStatus = (endDate) => {
+    const days = getDaysUntilExpiry(endDate)
+    if (days === null) return null
+    if (days < 0) return 'expired'
+    if (days <= 7) return 'warning'
+    return 'ok'
+  }
+
   const members = users.filter(u => u.role === 'MEMBER')
   const trainers = users.filter(u => u.role === 'TRAINER')
+
+  const filteredMembers = members.filter(u =>
+    `${u.firstName} ${u.lastName} ${u.dni || ''} ${u.email}`.toLowerCase().includes(search.toLowerCase())
+  )
+  const filteredTrainers = trainers.filter(u =>
+    `${u.firstName} ${u.lastName} ${u.dni || ''} ${u.email}`.toLowerCase().includes(search.toLowerCase())
+  )
+
+  // Stats
+  const activeMembers = members.filter(u => u.isActive).length
+  const expiredPlans = members.filter(u => u.userPlan && getDaysUntilExpiry(u.userPlan.endDate) < 0).length
+  const expiringPlans = members.filter(u => u.userPlan && getDaysUntilExpiry(u.userPlan.endDate) >= 0 && getDaysUntilExpiry(u.userPlan.endDate) <= 7).length
+  const noPlans = members.filter(u => !u.userPlan).length
 
   if (loading) return <div className="sa-loading"><div className="sa-spinner" /></div>
 
@@ -116,6 +154,9 @@ const DashboardSuperAdmin = () => {
           <span className="sa-logo-text">GIM<strong>PRO</strong></span>
         </div>
         <nav className="sa-nav">
+          <button className={`sa-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+            <span>📊</span> Dashboard
+          </button>
           <button className={`sa-nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
             <span>👥</span> Miembros
           </button>
@@ -136,87 +177,209 @@ const DashboardSuperAdmin = () => {
       </aside>
 
       <main className="sa-main">
-        <div className="sa-header">
-          <div>
-            <h1 className="sa-title">{activeTab === 'users' ? 'Miembros' : 'Entrenadores'}</h1>
-            <p className="sa-subtitle">{activeTab === 'users' ? `${members.length} miembros registrados` : `${trainers.length} entrenadores registrados`}</p>
-          </div>
-          <button className="sa-btn-primary" onClick={() => setShowCreateModal(true)}>+ Nuevo usuario</button>
-        </div>
 
-        {activeTab === 'users' && (
-          <div className="sa-card">
-            <table className="sa-table">
-              <thead><tr><th>Nombre</th><th>DNI</th><th>Teléfono</th><th>Plan</th><th>Último pago</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr></thead>
-              <tbody>
-                {members.length === 0 && <tr><td colSpan={8} className="sa-empty">No hay miembros registrados</td></tr>}
-                {members.map(u => (
-                  <tr key={u.id}>
-                    <td>
-                      <div className="sa-user-cell">
-                        <div className="sa-avatar sm">{u.firstName[0]}{u.lastName[0]}</div>
-                        <div><div className="sa-cell-name">{u.firstName} {u.lastName}</div><div className="sa-cell-email">{u.email}</div></div>
-                      </div>
-                    </td>
-                    <td>{u.dni || '—'}</td>
-                    <td>{u.phone || '—'}</td>
-                    <td>{u.userPlan?.plan?.name || <span className="sa-no-plan">Sin plan</span>}</td>
-                    <td>{formatDate(u.userPlan?.paidAt)}</td>
-                    <td>
-                      {u.userPlan
-                        ? <span className={new Date(u.userPlan.endDate) < new Date() ? 'sa-expired' : 'sa-active-date'}>{formatDate(u.userPlan.endDate)}</span>
-                        : '—'}
-                    </td>
-                    <td><span className={`sa-status ${u.isActive ? 'active' : 'inactive'}`}>{u.isActive ? 'Activo' : 'Inactivo'}</span></td>
-                    <td>
-                      <div className="sa-actions">
-                        <button className="sa-btn-action edit" onClick={() => { setEditForm({ id: u.id, firstName: u.firstName, lastName: u.lastName, dni: u.dni || '', phone: u.phone || '' }); setShowEditModal(true) }}>✏️ Editar</button>
-                        <button className="sa-btn-action plan" onClick={() => { setSelectedUser(u); setPlanForm({ planId: '', startDate: '' }); setShowPlanModal(true) }}>💳 Plan</button>
-                        <button className="sa-btn-action reset" onClick={() => { setResetUser(u); setShowResetModal(true) }}>🔑 Clave</button>
-                        <button className={`sa-btn-action ${u.isActive ? 'deactivate' : 'activate'}`} onClick={() => toggleActive(u)}>{u.isActive ? '🔒 Desactivar' : '✅ Activar'}</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* ── DASHBOARD ── */}
+        {activeTab === 'dashboard' && (
+          <>
+            <div className="sa-header">
+              <div>
+                <h1 className="sa-title">Dashboard</h1>
+                <p className="sa-subtitle">Resumen general del gimnasio</p>
+              </div>
+              <button className="sa-btn-primary" onClick={() => setShowCreateModal(true)}>+ Nuevo usuario</button>
+            </div>
+
+            <div className="sa-stats-grid">
+              <div className="sa-stat-card blue">
+                <div className="sa-stat-icon">👥</div>
+                <div className="sa-stat-value">{activeMembers}</div>
+                <div className="sa-stat-label">Miembros activos</div>
+              </div>
+              <div className="sa-stat-card green">
+                <div className="sa-stat-icon">💪</div>
+                <div className="sa-stat-value">{trainers.length}</div>
+                <div className="sa-stat-label">Entrenadores</div>
+              </div>
+              <div className="sa-stat-card red">
+                <div className="sa-stat-icon">⚠️</div>
+                <div className="sa-stat-value">{expiredPlans}</div>
+                <div className="sa-stat-label">Planes vencidos</div>
+              </div>
+              <div className="sa-stat-card orange">
+                <div className="sa-stat-icon">🔔</div>
+                <div className="sa-stat-value">{expiringPlans}</div>
+                <div className="sa-stat-label">Vencen en 7 días</div>
+              </div>
+              <div className="sa-stat-card gray">
+                <div className="sa-stat-icon">📋</div>
+                <div className="sa-stat-value">{noPlans}</div>
+                <div className="sa-stat-label">Sin plan asignado</div>
+              </div>
+            </div>
+
+            {/* Alertas */}
+            {(expiredPlans > 0 || expiringPlans > 0) && (
+              <div className="sa-alerts">
+                <h2 className="sa-section-title">🔔 Alertas</h2>
+                <div className="sa-alert-list">
+                  {members
+                    .filter(u => u.userPlan && getDaysUntilExpiry(u.userPlan.endDate) <= 7)
+                    .sort((a, b) => new Date(a.userPlan.endDate) - new Date(b.userPlan.endDate))
+                    .map(u => {
+                      const days = getDaysUntilExpiry(u.userPlan.endDate)
+                      return (
+                        <div key={u.id} className={`sa-alert-item ${days < 0 ? 'expired' : 'warning'}`}>
+                          <div className="sa-alert-avatar">{u.firstName[0]}{u.lastName[0]}</div>
+                          <div className="sa-alert-info">
+                            <div className="sa-alert-name">{u.firstName} {u.lastName}</div>
+                            <div className="sa-alert-plan">{u.userPlan.plan.name}</div>
+                          </div>
+                          <div className="sa-alert-date">
+                            {days < 0
+                              ? `Venció hace ${Math.abs(days)} días`
+                              : days === 0 ? 'Vence hoy'
+                              : `Vence en ${days} días`}
+                          </div>
+                          <button className="sa-btn-action plan" onClick={() => { setSelectedUser(u); setPlanForm({ planId: '', startDate: '' }); setShowPlanModal(true) }}>
+                            💳 Renovar
+                          </button>
+                        </div>
+                      )
+                    })}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
+        {/* ── MIEMBROS ── */}
+        {activeTab === 'users' && (
+          <>
+            <div className="sa-header">
+              <div>
+                <h1 className="sa-title">Miembros</h1>
+                <p className="sa-subtitle">{filteredMembers.length} miembros encontrados</p>
+              </div>
+              <button className="sa-btn-primary" onClick={() => setShowCreateModal(true)}>+ Nuevo usuario</button>
+            </div>
+
+            <div className="sa-search-bar">
+              <span className="sa-search-icon">🔍</span>
+              <input
+                placeholder="Buscar por nombre, DNI o email..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              {search && <button className="sa-search-clear" onClick={() => setSearch('')}>✕</button>}
+            </div>
+
+            <div className="sa-card">
+              <table className="sa-table">
+                <thead><tr><th>Nombre</th><th>DNI</th><th>Teléfono</th><th>Plan</th><th>Último pago</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody>
+                  {filteredMembers.length === 0 && <tr><td colSpan={8} className="sa-empty">No se encontraron miembros</td></tr>}
+                  {filteredMembers.map(u => {
+                    const expiryStatus = u.userPlan ? getExpiryStatus(u.userPlan.endDate) : null
+                    const days = u.userPlan ? getDaysUntilExpiry(u.userPlan.endDate) : null
+                    return (
+                      <tr key={u.id} className={expiryStatus === 'expired' ? 'row-expired' : expiryStatus === 'warning' ? 'row-warning' : ''}>
+                        <td>
+                          <div className="sa-user-cell">
+                            <div className="sa-avatar sm">{u.firstName[0]}{u.lastName[0]}</div>
+                            <div><div className="sa-cell-name">{u.firstName} {u.lastName}</div><div className="sa-cell-email">{u.email}</div></div>
+                          </div>
+                        </td>
+                        <td>{u.dni || '—'}</td>
+                        <td>{u.phone || '—'}</td>
+                        <td>{u.userPlan?.plan?.name || <span className="sa-no-plan">Sin plan</span>}</td>
+                        <td>{formatDate(u.userPlan?.paidAt)}</td>
+                        <td>
+                          {u.userPlan ? (
+                            <div>
+                              <span className={expiryStatus === 'expired' ? 'sa-expired' : expiryStatus === 'warning' ? 'sa-warning-date' : 'sa-active-date'}>
+                                {formatDate(u.userPlan.endDate)}
+                              </span>
+                              {expiryStatus === 'expired' && <div className="sa-expiry-note">Venció hace {Math.abs(days)} días</div>}
+                              {expiryStatus === 'warning' && <div className="sa-expiry-note warning">Vence en {days} días</div>}
+                            </div>
+                          ) : '—'}
+                        </td>
+                        <td><span className={`sa-status ${u.isActive ? 'active' : 'inactive'}`}>{u.isActive ? 'Activo' : 'Inactivo'}</span></td>
+                        <td>
+                          <div className="sa-actions">
+                            <button className="sa-btn-action edit" onClick={() => { setEditForm({ id: u.id, firstName: u.firstName, lastName: u.lastName, dni: u.dni || '', phone: u.phone || '' }); setShowEditModal(true) }}>✏️</button>
+                            <button className="sa-btn-action plan" onClick={() => { setSelectedUser(u); setPlanForm({ planId: '', startDate: '' }); setShowPlanModal(true) }}>💳 Plan</button>
+                            <button className="sa-btn-action history" onClick={() => { setHistoryUser(u); setShowHistoryModal(true) }}>📋</button>
+                            <button className="sa-btn-action reset" onClick={() => { setResetUser(u); setShowResetModal(true) }}>🔑</button>
+                            <button className={`sa-btn-action ${u.isActive ? 'deactivate' : 'activate'}`} onClick={() => toggleActive(u)}>{u.isActive ? '🔒' : '✅'}</button>
+                            <button className="sa-btn-action delete" onClick={() => { setDeleteUser(u); setShowDeleteModal(true) }}>🗑️</button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {/* ── ENTRENADORES ── */}
         {activeTab === 'trainers' && (
-          <div className="sa-card">
-            <table className="sa-table">
-              <thead><tr><th>Nombre</th><th>DNI</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Acciones</th></tr></thead>
-              <tbody>
-                {trainers.length === 0 && <tr><td colSpan={6} className="sa-empty">No hay entrenadores registrados</td></tr>}
-                {trainers.map(u => (
-                  <tr key={u.id}>
-                    <td>
-                      <div className="sa-user-cell">
-                        <div className="sa-avatar sm trainer">{u.firstName[0]}{u.lastName[0]}</div>
-                        <div><div className="sa-cell-name">{u.firstName} {u.lastName}</div></div>
-                      </div>
-                    </td>
-                    <td>{u.dni || '—'}</td>
-                    <td>{u.phone || '—'}</td>
-                    <td>{u.email}</td>
-                    <td><span className={`sa-status ${u.isActive ? 'active' : 'inactive'}`}>{u.isActive ? 'Activo' : 'Inactivo'}</span></td>
-                    <td>
-                      <div className="sa-actions">
-                        <button className="sa-btn-action edit" onClick={() => { setEditForm({ id: u.id, firstName: u.firstName, lastName: u.lastName, dni: u.dni || '', phone: u.phone || '' }); setShowEditModal(true) }}>✏️ Editar</button>
-                        <button className="sa-btn-action reset" onClick={() => { setResetUser(u); setShowResetModal(true) }}>🔑 Clave</button>
-                        <button className={`sa-btn-action ${u.isActive ? 'deactivate' : 'activate'}`} onClick={() => toggleActive(u)}>{u.isActive ? '🔒 Desactivar' : '✅ Activar'}</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="sa-header">
+              <div>
+                <h1 className="sa-title">Entrenadores</h1>
+                <p className="sa-subtitle">{filteredTrainers.length} entrenadores encontrados</p>
+              </div>
+              <button className="sa-btn-primary" onClick={() => setShowCreateModal(true)}>+ Nuevo usuario</button>
+            </div>
+
+            <div className="sa-search-bar">
+              <span className="sa-search-icon">🔍</span>
+              <input
+                placeholder="Buscar por nombre, DNI o email..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              {search && <button className="sa-search-clear" onClick={() => setSearch('')}>✕</button>}
+            </div>
+
+            <div className="sa-card">
+              <table className="sa-table">
+                <thead><tr><th>Nombre</th><th>DNI</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody>
+                  {filteredTrainers.length === 0 && <tr><td colSpan={6} className="sa-empty">No se encontraron entrenadores</td></tr>}
+                  {filteredTrainers.map(u => (
+                    <tr key={u.id}>
+                      <td>
+                        <div className="sa-user-cell">
+                          <div className="sa-avatar sm trainer">{u.firstName[0]}{u.lastName[0]}</div>
+                          <div><div className="sa-cell-name">{u.firstName} {u.lastName}</div></div>
+                        </div>
+                      </td>
+                      <td>{u.dni || '—'}</td>
+                      <td>{u.phone || '—'}</td>
+                      <td>{u.email}</td>
+                      <td><span className={`sa-status ${u.isActive ? 'active' : 'inactive'}`}>{u.isActive ? 'Activo' : 'Inactivo'}</span></td>
+                      <td>
+                        <div className="sa-actions">
+                          <button className="sa-btn-action edit" onClick={() => { setEditForm({ id: u.id, firstName: u.firstName, lastName: u.lastName, dni: u.dni || '', phone: u.phone || '' }); setShowEditModal(true) }}>✏️ Editar</button>
+                          <button className="sa-btn-action reset" onClick={() => { setResetUser(u); setShowResetModal(true) }}>🔑 Clave</button>
+                          <button className={`sa-btn-action ${u.isActive ? 'deactivate' : 'activate'}`} onClick={() => toggleActive(u)}>{u.isActive ? '🔒 Desactivar' : '✅ Activar'}</button>
+                          <button className="sa-btn-action delete" onClick={() => { setDeleteUser(u); setShowDeleteModal(true) }}>🗑️ Eliminar</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </main>
 
-      {/* Modal Crear Usuario */}
+      {/* Modal Crear */}
       {showCreateModal && (
         <div className="sa-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="sa-modal" onClick={e => e.stopPropagation()}>
@@ -253,7 +416,7 @@ const DashboardSuperAdmin = () => {
         </div>
       )}
 
-      {/* Modal Editar Usuario */}
+      {/* Modal Editar */}
       {showEditModal && (
         <div className="sa-overlay" onClick={() => setShowEditModal(false)}>
           <div className="sa-modal" onClick={e => e.stopPropagation()}>
@@ -311,6 +474,41 @@ const DashboardSuperAdmin = () => {
         </div>
       )}
 
+      {/* Modal Historial */}
+      {showHistoryModal && historyUser && (
+        <div className="sa-overlay" onClick={() => setShowHistoryModal(false)}>
+          <div className="sa-modal" onClick={e => e.stopPropagation()}>
+            <div className="sa-modal-header">
+              <h2>Historial de Pagos</h2>
+              <button className="sa-modal-close" onClick={() => setShowHistoryModal(false)}>✕</button>
+            </div>
+            <p className="sa-modal-subtitle">{historyUser.firstName} {historyUser.lastName}</p>
+            <div className="sa-modal-form">
+              {!historyUser.userPlan ? (
+                <div className="sa-empty">Este miembro no tiene planes registrados</div>
+              ) : (
+                <div className="sa-history-list">
+                  <div className="sa-history-item">
+                    <div className="sa-history-plan">{historyUser.userPlan.plan.name}</div>
+                    <div className="sa-history-dates">
+                      <span>Inicio: {formatDate(historyUser.userPlan.startDate)}</span>
+                      <span>Vencimiento: {formatDate(historyUser.userPlan.endDate)}</span>
+                      <span>Pagado: {formatDate(historyUser.userPlan.paidAt)}</span>
+                    </div>
+                    <span className={`sa-status ${historyUser.userPlan.status === 'ACTIVE' ? 'active' : 'inactive'}`}>
+                      {historyUser.userPlan.status === 'ACTIVE' ? 'Activo' : 'Vencido'}
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div className="sa-modal-footer">
+                <button type="button" className="sa-btn-primary" onClick={() => setShowHistoryModal(false)}>Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal Reset Password */}
       {showResetModal && resetUser && (
         <div className="sa-overlay" onClick={() => setShowResetModal(false)}>
@@ -327,6 +525,29 @@ const DashboardSuperAdmin = () => {
                 <button type="submit" className="sa-btn-primary" disabled={resetLoading}>{resetLoading ? 'Guardando...' : 'Guardar'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Eliminar */}
+      {showDeleteModal && deleteUser && (
+        <div className="sa-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="sa-modal sm" onClick={e => e.stopPropagation()}>
+            <div className="sa-modal-header">
+              <h2>Eliminar Usuario</h2>
+              <button className="sa-modal-close" onClick={() => setShowDeleteModal(false)}>✕</button>
+            </div>
+            <div className="sa-modal-form">
+              <p className="sa-delete-warning">
+                ¿Estás segura que querés eliminar a <strong>{deleteUser.firstName} {deleteUser.lastName}</strong>? Esta acción no se puede deshacer.
+              </p>
+              <div className="sa-modal-footer">
+                <button type="button" className="sa-btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
+                <button type="button" className="sa-btn-danger" onClick={handleDelete} disabled={deleteLoading}>
+                  {deleteLoading ? 'Eliminando...' : '🗑️ Eliminar'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

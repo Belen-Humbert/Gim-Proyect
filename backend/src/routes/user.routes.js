@@ -146,4 +146,13 @@ router.post('/:id/plan', authenticate, isSuperAdmin, async (req, res) => {
   }
 });
 
+router.delete('/:id', authenticate, isSuperAdmin, async (req, res) => {
+  try {
+    await prisma.user.delete({ where: { id: req.params.id } });
+    res.json({ success: true, message: 'Usuario eliminado correctamente' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error al eliminar usuario' });
+  }
+});
+
 module.exports = router;
