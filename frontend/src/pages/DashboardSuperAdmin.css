@@ -165,4 +165,34 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-.sa-btn-action.routine { background: #f3e5f5; color: #7b1fa2; }
+/* ── Stat cards clickeables ── */
+.sa-stat-card.clickable {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.sa-stat-card.clickable:hover {
+  transform: scale(1.04);
+  box-shadow: 0 8px 24px rgba(13,33,68,0.13);
+}
+.sa-stat-hint {
+  font-size: 11px;
+  color: #b0c4de;
+  margin-top: 4px;
+  font-weight: 500;
+}
+.sa-stat-card.clickable:hover .sa-stat-hint {
+  color: #1a6bdb;
+}
+
+/* ── Stat detail modal ── */
+.sa-modal.stat-detail {
+  max-width: 900px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+.sa-stat-detail-body {
+  overflow-y: auto;
+  flex: 1;
+}
