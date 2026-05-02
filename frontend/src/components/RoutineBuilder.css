@@ -1,0 +1,186 @@
+/* frontend/src/components/RoutineBuilder.css */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+.rb-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10, 22, 40, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px;
+}
+
+.rb-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%; max-width: 900px;
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 80px rgba(10,22,40,0.35);
+  animation: modalIn 0.25s ease;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+}
+
+/* Header */
+.rb-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 24px 28px;
+  border-bottom: 1px solid #f0f4ff;
+}
+.rb-header h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; color: #0a1628; letter-spacing: 1px;
+}
+.rb-header p { font-size: 14px; color: #7a90b0; margin-top: 2px; }
+.rb-close {
+  width: 32px; height: 32px; background: #f0f4ff;
+  border: none; border-radius: 8px; color: #4a6080;
+  font-size: 14px; cursor: pointer;
+}
+.rb-close:hover { background: #dce8f8; }
+
+/* Routine info */
+.rb-routine-info {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  padding: 16px 28px;
+  border-bottom: 1px solid #f0f4ff;
+  background: #f8faff;
+}
+
+/* Body */
+.rb-body {
+  display: flex; flex: 1; overflow: hidden;
+}
+
+/* Days panel */
+.rb-days-panel {
+  width: 180px; min-width: 180px;
+  background: #f5f9ff;
+  border-right: 1px solid #dce8f8;
+  display: flex; flex-direction: column;
+  padding: 16px 12px; gap: 6px;
+  overflow-y: auto;
+}
+.rb-days-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: #4a6080; margin-bottom: 4px; padding: 0 4px;
+}
+.rb-day-tab {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; color: #4a6080;
+  cursor: pointer; transition: background 0.2s, color 0.2s;
+  border: 1.5px solid transparent;
+}
+.rb-day-tab:hover { background: #e8f0fe; color: #1a6bdb; }
+.rb-day-tab.active { background: #1a6bdb; color: #fff; border-color: #1a6bdb; }
+.rb-remove-day {
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; opacity: 0.6; padding: 2px;
+  color: inherit;
+}
+.rb-remove-day:hover { opacity: 1; }
+.rb-add-day {
+  margin-top: 4px; padding: 10px;
+  background: transparent; border: 1.5px dashed #b0c4de;
+  border-radius: 8px; color: #1a6bdb; font-size: 13px;
+  font-family: 'DM Sans', sans-serif; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+.rb-add-day:hover { background: #e8f0fe; }
+
+/* Exercises panel */
+.rb-exercises-panel {
+  flex: 1; overflow-y: auto; padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.rb-day-header {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  padding-bottom: 12px; border-bottom: 1px solid #f0f4ff;
+}
+.rb-exercises-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: #4a6080;
+}
+
+/* Exercise card */
+.rb-exercise-card {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: #f8faff; border-radius: 10px; padding: 14px;
+  border: 1px solid #e8f0fe;
+}
+.rb-exercise-num {
+  width: 28px; height: 28px; min-width: 28px;
+  background: #1a6bdb; color: #fff;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; margin-top: 2px;
+}
+.rb-exercise-fields { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.rb-field-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.rb-remove-ex {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; opacity: 0.5; padding: 4px;
+  align-self: flex-start; margin-top: 2px;
+}
+.rb-remove-ex:hover { opacity: 1; }
+
+.rb-add-ex {
+  padding: 12px; background: transparent;
+  border: 1.5px dashed #b0c4de; border-radius: 8px;
+  color: #1a6bdb; font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  transition: background 0.2s;
+}
+.rb-add-ex:hover { background: #e8f0fe; }
+
+/* Fields */
+.rb-field { display: flex; flex-direction: column; gap: 5px; }
+.rb-field.full { grid-column: 1 / -1; }
+.rb-field label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: #4a6080;
+}
+.rb-field input {
+  padding: 9px 12px; border: 1.5px solid #dce8f8;
+  border-radius: 7px; font-size: 13px;
+  font-family: 'DM Sans', sans-serif; color: #0a1628;
+  background: #fff; outline: none;
+  transition: border-color 0.2s;
+}
+.rb-field input:focus { border-color: #1a6bdb; }
+.rb-field input::placeholder { color: #b0c4de; }
+
+/* Error */
+.rb-error {
+  margin: 0 28px; padding: 10px 14px;
+  background: #fce4ec; border-left: 3px solid #e53935;
+  border-radius: 6px; font-size: 13px; color: #c62828;
+}
+
+/* Footer */
+.rb-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 28px; border-top: 1px solid #f0f4ff;
+  background: #f8faff;
+}
+.rb-btn-primary {
+  padding: 11px 24px; background: linear-gradient(135deg, #1a6bdb, #4fa3f7);
+  color: #fff; border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; box-shadow: 0 4px 14px rgba(26,107,219,0.3);
+  transition: opacity 0.2s;
+}
+.rb-btn-primary:hover:not(:disabled) { opacity: 0.9; }
+.rb-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.rb-btn-secondary {
+  padding: 11px 20px; background: transparent;
+  color: #4a6080; border: 1.5px solid #dce8f8;
+  border-radius: 8px; font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.rb-btn-secondary:hover { background: #f0f4ff; }
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(-10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}

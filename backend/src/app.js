@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const planRoutes = require('./routes/plans.routes');
+const routineRoutes = require('./routes/routine.routes');
 
 const app = express();
 
@@ -17,12 +18,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 // ─────────────────────────────────────────
 // RUTAS
 // ─────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/routines', routineRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

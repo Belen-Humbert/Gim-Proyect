@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import RoutineBuilder from '../components/RoutineBuilder'
+import RoutineViewer from '../components/RoutineViewer'
 import './DashboardSuperAdmin.css'
 
 const DashboardSuperAdmin = () => {
@@ -42,6 +44,10 @@ const DashboardSuperAdmin = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteUser, setDeleteUser] = useState(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
+
+  const [showRoutineViewer, setShowRoutineViewer] = useState(false)
+  const [showRoutineBuilder, setShowRoutineBuilder] = useState(false)
+  const [routineMember, setRoutineMember] = useState(null)
 
   useEffect(() => { fetchData() }, [])
 
@@ -138,7 +144,6 @@ const DashboardSuperAdmin = () => {
     `${u.firstName} ${u.lastName} ${u.dni || ''} ${u.email}`.toLowerCase().includes(search.toLowerCase())
   )
 
-  // Stats
   const activeMembers = members.filter(u => u.isActive).length
   const expiredPlans = members.filter(u => u.userPlan && getDaysUntilExpiry(u.userPlan.endDate) < 0).length
   const expiringPlans = members.filter(u => u.userPlan && getDaysUntilExpiry(u.userPlan.endDate) >= 0 && getDaysUntilExpiry(u.userPlan.endDate) <= 7).length
@@ -154,15 +159,9 @@ const DashboardSuperAdmin = () => {
           <span className="sa-logo-text">GIM<strong>PRO</strong></span>
         </div>
         <nav className="sa-nav">
-          <button className={`sa-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
-            <span>📊</span> Dashboard
-          </button>
-          <button className={`sa-nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
-            <span>👥</span> Miembros
-          </button>
-          <button className={`sa-nav-item ${activeTab === 'trainers' ? 'active' : ''}`} onClick={() => setActiveTab('trainers')}>
-            <span>💪</span> Entrenadores
-          </button>
+          <button className={`sa-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><span>📊</span> Dashboard</button>
+          <button className={`sa-nav-item ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}><span>👥</span> Miembros</button>
+          <button className={`sa-nav-item ${activeTab === 'trainers' ? 'active' : ''}`} onClick={() => setActiveTab('trainers')}><span>💪</span> Entrenadores</button>
         </nav>
         <div className="sa-sidebar-footer">
           <div className="sa-user-info">
@@ -177,53 +176,24 @@ const DashboardSuperAdmin = () => {
       </aside>
 
       <main className="sa-main">
-
-        {/* ── DASHBOARD ── */}
         {activeTab === 'dashboard' && (
           <>
             <div className="sa-header">
-              <div>
-                <h1 className="sa-title">Dashboard</h1>
-                <p className="sa-subtitle">Resumen general del gimnasio</p>
-              </div>
+              <div><h1 className="sa-title">Dashboard</h1><p className="sa-subtitle">Resumen general del gimnasio</p></div>
               <button className="sa-btn-primary" onClick={() => setShowCreateModal(true)}>+ Nuevo usuario</button>
             </div>
-
             <div className="sa-stats-grid">
-              <div className="sa-stat-card blue">
-                <div className="sa-stat-icon">👥</div>
-                <div className="sa-stat-value">{activeMembers}</div>
-                <div className="sa-stat-label">Miembros activos</div>
-              </div>
-              <div className="sa-stat-card green">
-                <div className="sa-stat-icon">💪</div>
-                <div className="sa-stat-value">{trainers.length}</div>
-                <div className="sa-stat-label">Entrenadores</div>
-              </div>
-              <div className="sa-stat-card red">
-                <div className="sa-stat-icon">⚠️</div>
-                <div className="sa-stat-value">{expiredPlans}</div>
-                <div className="sa-stat-label">Planes vencidos</div>
-              </div>
-              <div className="sa-stat-card orange">
-                <div className="sa-stat-icon">🔔</div>
-                <div className="sa-stat-value">{expiringPlans}</div>
-                <div className="sa-stat-label">Vencen en 7 días</div>
-              </div>
-              <div className="sa-stat-card gray">
-                <div className="sa-stat-icon">📋</div>
-                <div className="sa-stat-value">{noPlans}</div>
-                <div className="sa-stat-label">Sin plan asignado</div>
-              </div>
+              <div className="sa-stat-card blue"><div className="sa-stat-icon">👥</div><div className="sa-stat-value">{activeMembers}</div><div className="sa-stat-label">Miembros activos</div></div>
+              <div className="sa-stat-card green"><div className="sa-stat-icon">💪</div><div className="sa-stat-value">{trainers.length}</div><div className="sa-stat-label">Entrenadores</div></div>
+              <div className="sa-stat-card red"><div className="sa-stat-icon">⚠️</div><div className="sa-stat-value">{expiredPlans}</div><div className="sa-stat-label">Planes vencidos</div></div>
+              <div className="sa-stat-card orange"><div className="sa-stat-icon">🔔</div><div className="sa-stat-value">{expiringPlans}</div><div className="sa-stat-label">Vencen en 7 días</div></div>
+              <div className="sa-stat-card gray"><div className="sa-stat-icon">📋</div><div className="sa-stat-value">{noPlans}</div><div className="sa-stat-label">Sin plan asignado</div></div>
             </div>
-
-            {/* Alertas */}
             {(expiredPlans > 0 || expiringPlans > 0) && (
               <div className="sa-alerts">
                 <h2 className="sa-section-title">🔔 Alertas</h2>
                 <div className="sa-alert-list">
-                  {members
-                    .filter(u => u.userPlan && getDaysUntilExpiry(u.userPlan.endDate) <= 7)
+                  {members.filter(u => u.userPlan && getDaysUntilExpiry(u.userPlan.endDate) <= 7)
                     .sort((a, b) => new Date(a.userPlan.endDate) - new Date(b.userPlan.endDate))
                     .map(u => {
                       const days = getDaysUntilExpiry(u.userPlan.endDate)
@@ -234,15 +204,8 @@ const DashboardSuperAdmin = () => {
                             <div className="sa-alert-name">{u.firstName} {u.lastName}</div>
                             <div className="sa-alert-plan">{u.userPlan.plan.name}</div>
                           </div>
-                          <div className="sa-alert-date">
-                            {days < 0
-                              ? `Venció hace ${Math.abs(days)} días`
-                              : days === 0 ? 'Vence hoy'
-                              : `Vence en ${days} días`}
-                          </div>
-                          <button className="sa-btn-action plan" onClick={() => { setSelectedUser(u); setPlanForm({ planId: '', startDate: '' }); setShowPlanModal(true) }}>
-                            💳 Renovar
-                          </button>
+                          <div className="sa-alert-date">{days < 0 ? `Venció hace ${Math.abs(days)} días` : days === 0 ? 'Vence hoy' : `Vence en ${days} días`}</div>
+                          <button className="sa-btn-action plan" onClick={() => { setSelectedUser(u); setPlanForm({ planId: '', startDate: '' }); setShowPlanModal(true) }}>💳 Renovar</button>
                         </div>
                       )
                     })}
@@ -252,27 +215,17 @@ const DashboardSuperAdmin = () => {
           </>
         )}
 
-        {/* ── MIEMBROS ── */}
         {activeTab === 'users' && (
           <>
             <div className="sa-header">
-              <div>
-                <h1 className="sa-title">Miembros</h1>
-                <p className="sa-subtitle">{filteredMembers.length} miembros encontrados</p>
-              </div>
+              <div><h1 className="sa-title">Miembros</h1><p className="sa-subtitle">{filteredMembers.length} miembros encontrados</p></div>
               <button className="sa-btn-primary" onClick={() => setShowCreateModal(true)}>+ Nuevo usuario</button>
             </div>
-
             <div className="sa-search-bar">
               <span className="sa-search-icon">🔍</span>
-              <input
-                placeholder="Buscar por nombre, DNI o email..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+              <input placeholder="Buscar por nombre, DNI o email..." value={search} onChange={e => setSearch(e.target.value)} />
               {search && <button className="sa-search-clear" onClick={() => setSearch('')}>✕</button>}
             </div>
-
             <div className="sa-card">
               <table className="sa-table">
                 <thead><tr><th>Nombre</th><th>DNI</th><th>Teléfono</th><th>Plan</th><th>Último pago</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -296,9 +249,7 @@ const DashboardSuperAdmin = () => {
                         <td>
                           {u.userPlan ? (
                             <div>
-                              <span className={expiryStatus === 'expired' ? 'sa-expired' : expiryStatus === 'warning' ? 'sa-warning-date' : 'sa-active-date'}>
-                                {formatDate(u.userPlan.endDate)}
-                              </span>
+                              <span className={expiryStatus === 'expired' ? 'sa-expired' : expiryStatus === 'warning' ? 'sa-warning-date' : 'sa-active-date'}>{formatDate(u.userPlan.endDate)}</span>
                               {expiryStatus === 'expired' && <div className="sa-expiry-note">Venció hace {Math.abs(days)} días</div>}
                               {expiryStatus === 'warning' && <div className="sa-expiry-note warning">Vence en {days} días</div>}
                             </div>
@@ -309,6 +260,7 @@ const DashboardSuperAdmin = () => {
                           <div className="sa-actions">
                             <button className="sa-btn-action edit" onClick={() => { setEditForm({ id: u.id, firstName: u.firstName, lastName: u.lastName, dni: u.dni || '', phone: u.phone || '' }); setShowEditModal(true) }}>✏️</button>
                             <button className="sa-btn-action plan" onClick={() => { setSelectedUser(u); setPlanForm({ planId: '', startDate: '' }); setShowPlanModal(true) }}>💳 Plan</button>
+                            <button className="sa-btn-action routine" onClick={() => { setRoutineMember(u); setShowRoutineViewer(true) }}>🏋️ Rutina</button>
                             <button className="sa-btn-action history" onClick={() => { setHistoryUser(u); setShowHistoryModal(true) }}>📋</button>
                             <button className="sa-btn-action reset" onClick={() => { setResetUser(u); setShowResetModal(true) }}>🔑</button>
                             <button className={`sa-btn-action ${u.isActive ? 'deactivate' : 'activate'}`} onClick={() => toggleActive(u)}>{u.isActive ? '🔒' : '✅'}</button>
@@ -324,27 +276,17 @@ const DashboardSuperAdmin = () => {
           </>
         )}
 
-        {/* ── ENTRENADORES ── */}
         {activeTab === 'trainers' && (
           <>
             <div className="sa-header">
-              <div>
-                <h1 className="sa-title">Entrenadores</h1>
-                <p className="sa-subtitle">{filteredTrainers.length} entrenadores encontrados</p>
-              </div>
+              <div><h1 className="sa-title">Entrenadores</h1><p className="sa-subtitle">{filteredTrainers.length} entrenadores encontrados</p></div>
               <button className="sa-btn-primary" onClick={() => setShowCreateModal(true)}>+ Nuevo usuario</button>
             </div>
-
             <div className="sa-search-bar">
               <span className="sa-search-icon">🔍</span>
-              <input
-                placeholder="Buscar por nombre, DNI o email..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+              <input placeholder="Buscar por nombre, DNI o email..." value={search} onChange={e => setSearch(e.target.value)} />
               {search && <button className="sa-search-clear" onClick={() => setSearch('')}>✕</button>}
             </div>
-
             <div className="sa-card">
               <table className="sa-table">
                 <thead><tr><th>Nombre</th><th>DNI</th><th>Teléfono</th><th>Email</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -352,12 +294,7 @@ const DashboardSuperAdmin = () => {
                   {filteredTrainers.length === 0 && <tr><td colSpan={6} className="sa-empty">No se encontraron entrenadores</td></tr>}
                   {filteredTrainers.map(u => (
                     <tr key={u.id}>
-                      <td>
-                        <div className="sa-user-cell">
-                          <div className="sa-avatar sm trainer">{u.firstName[0]}{u.lastName[0]}</div>
-                          <div><div className="sa-cell-name">{u.firstName} {u.lastName}</div></div>
-                        </div>
-                      </td>
+                      <td><div className="sa-user-cell"><div className="sa-avatar sm trainer">{u.firstName[0]}{u.lastName[0]}</div><div><div className="sa-cell-name">{u.firstName} {u.lastName}</div></div></div></td>
                       <td>{u.dni || '—'}</td>
                       <td>{u.phone || '—'}</td>
                       <td>{u.email}</td>
@@ -379,14 +316,10 @@ const DashboardSuperAdmin = () => {
         )}
       </main>
 
-      {/* Modal Crear */}
       {showCreateModal && (
         <div className="sa-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="sa-modal" onClick={e => e.stopPropagation()}>
-            <div className="sa-modal-header">
-              <h2>Nuevo Usuario</h2>
-              <button className="sa-modal-close" onClick={() => setShowCreateModal(false)}>✕</button>
-            </div>
+            <div className="sa-modal-header"><h2>Nuevo Usuario</h2><button className="sa-modal-close" onClick={() => setShowCreateModal(false)}>✕</button></div>
             <form onSubmit={handleCreate} className="sa-modal-form">
               <div className="sa-form-row">
                 <div className="sa-form-field"><label>Nombre</label><input value={createForm.firstName} onChange={e => setCreateForm({...createForm, firstName: e.target.value})} placeholder="Juan" required /></div>
@@ -416,14 +349,10 @@ const DashboardSuperAdmin = () => {
         </div>
       )}
 
-      {/* Modal Editar */}
       {showEditModal && (
         <div className="sa-overlay" onClick={() => setShowEditModal(false)}>
           <div className="sa-modal" onClick={e => e.stopPropagation()}>
-            <div className="sa-modal-header">
-              <h2>Editar Usuario</h2>
-              <button className="sa-modal-close" onClick={() => setShowEditModal(false)}>✕</button>
-            </div>
+            <div className="sa-modal-header"><h2>Editar Usuario</h2><button className="sa-modal-close" onClick={() => setShowEditModal(false)}>✕</button></div>
             <form onSubmit={handleEdit} className="sa-modal-form">
               <div className="sa-form-row">
                 <div className="sa-form-field"><label>Nombre</label><input value={editForm.firstName} onChange={e => setEditForm({...editForm, firstName: e.target.value})} required /></div>
@@ -443,18 +372,12 @@ const DashboardSuperAdmin = () => {
         </div>
       )}
 
-      {/* Modal Asignar Plan */}
       {showPlanModal && selectedUser && (
         <div className="sa-overlay" onClick={() => setShowPlanModal(false)}>
           <div className="sa-modal" onClick={e => e.stopPropagation()}>
-            <div className="sa-modal-header">
-              <h2>Asignar Plan</h2>
-              <button className="sa-modal-close" onClick={() => setShowPlanModal(false)}>✕</button>
-            </div>
+            <div className="sa-modal-header"><h2>Asignar Plan</h2><button className="sa-modal-close" onClick={() => setShowPlanModal(false)}>✕</button></div>
             <p className="sa-modal-subtitle">Miembro: <strong>{selectedUser.firstName} {selectedUser.lastName}</strong></p>
-            {selectedUser.userPlan && (
-              <div className="sa-current-plan">Plan actual: <strong>{selectedUser.userPlan.plan.name}</strong> — vence el {formatDate(selectedUser.userPlan.endDate)}</div>
-            )}
+            {selectedUser.userPlan && <div className="sa-current-plan">Plan actual: <strong>{selectedUser.userPlan.plan.name}</strong> — vence el {formatDate(selectedUser.userPlan.endDate)}</div>}
             <form onSubmit={handleAssignPlan} className="sa-modal-form">
               <div className="sa-form-field">
                 <label>Plan</label>
@@ -474,19 +397,13 @@ const DashboardSuperAdmin = () => {
         </div>
       )}
 
-      {/* Modal Historial */}
       {showHistoryModal && historyUser && (
         <div className="sa-overlay" onClick={() => setShowHistoryModal(false)}>
           <div className="sa-modal" onClick={e => e.stopPropagation()}>
-            <div className="sa-modal-header">
-              <h2>Historial de Pagos</h2>
-              <button className="sa-modal-close" onClick={() => setShowHistoryModal(false)}>✕</button>
-            </div>
+            <div className="sa-modal-header"><h2>Historial de Pagos</h2><button className="sa-modal-close" onClick={() => setShowHistoryModal(false)}>✕</button></div>
             <p className="sa-modal-subtitle">{historyUser.firstName} {historyUser.lastName}</p>
             <div className="sa-modal-form">
-              {!historyUser.userPlan ? (
-                <div className="sa-empty">Este miembro no tiene planes registrados</div>
-              ) : (
+              {!historyUser.userPlan ? <div className="sa-empty">Este miembro no tiene planes registrados</div> : (
                 <div className="sa-history-list">
                   <div className="sa-history-item">
                     <div className="sa-history-plan">{historyUser.userPlan.plan.name}</div>
@@ -495,9 +412,7 @@ const DashboardSuperAdmin = () => {
                       <span>Vencimiento: {formatDate(historyUser.userPlan.endDate)}</span>
                       <span>Pagado: {formatDate(historyUser.userPlan.paidAt)}</span>
                     </div>
-                    <span className={`sa-status ${historyUser.userPlan.status === 'ACTIVE' ? 'active' : 'inactive'}`}>
-                      {historyUser.userPlan.status === 'ACTIVE' ? 'Activo' : 'Vencido'}
-                    </span>
+                    <span className={`sa-status ${historyUser.userPlan.status === 'ACTIVE' ? 'active' : 'inactive'}`}>{historyUser.userPlan.status === 'ACTIVE' ? 'Activo' : 'Vencido'}</span>
                   </div>
                 </div>
               )}
@@ -509,14 +424,10 @@ const DashboardSuperAdmin = () => {
         </div>
       )}
 
-      {/* Modal Reset Password */}
       {showResetModal && resetUser && (
         <div className="sa-overlay" onClick={() => setShowResetModal(false)}>
           <div className="sa-modal sm" onClick={e => e.stopPropagation()}>
-            <div className="sa-modal-header">
-              <h2>Resetear Contraseña</h2>
-              <button className="sa-modal-close" onClick={() => setShowResetModal(false)}>✕</button>
-            </div>
+            <div className="sa-modal-header"><h2>Resetear Contraseña</h2><button className="sa-modal-close" onClick={() => setShowResetModal(false)}>✕</button></div>
             <p className="sa-modal-subtitle">Usuario: <strong>{resetUser.firstName} {resetUser.lastName}</strong></p>
             <form onSubmit={handleResetPassword} className="sa-modal-form">
               <div className="sa-form-field"><label>Nueva contraseña</label><input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres" required minLength={8} /></div>
@@ -529,27 +440,35 @@ const DashboardSuperAdmin = () => {
         </div>
       )}
 
-      {/* Modal Eliminar */}
       {showDeleteModal && deleteUser && (
         <div className="sa-overlay" onClick={() => setShowDeleteModal(false)}>
           <div className="sa-modal sm" onClick={e => e.stopPropagation()}>
-            <div className="sa-modal-header">
-              <h2>Eliminar Usuario</h2>
-              <button className="sa-modal-close" onClick={() => setShowDeleteModal(false)}>✕</button>
-            </div>
+            <div className="sa-modal-header"><h2>Eliminar Usuario</h2><button className="sa-modal-close" onClick={() => setShowDeleteModal(false)}>✕</button></div>
             <div className="sa-modal-form">
-              <p className="sa-delete-warning">
-                ¿Estás segura que querés eliminar a <strong>{deleteUser.firstName} {deleteUser.lastName}</strong>? Esta acción no se puede deshacer.
-              </p>
+              <p className="sa-delete-warning">¿Estás segura que querés eliminar a <strong>{deleteUser.firstName} {deleteUser.lastName}</strong>? Esta acción no se puede deshacer.</p>
               <div className="sa-modal-footer">
                 <button type="button" className="sa-btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
-                <button type="button" className="sa-btn-danger" onClick={handleDelete} disabled={deleteLoading}>
-                  {deleteLoading ? 'Eliminando...' : '🗑️ Eliminar'}
-                </button>
+                <button type="button" className="sa-btn-danger" onClick={handleDelete} disabled={deleteLoading}>{deleteLoading ? 'Eliminando...' : '🗑️ Eliminar'}</button>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {showRoutineViewer && routineMember && (
+        <RoutineViewer
+          member={routineMember}
+          onClose={() => { setShowRoutineViewer(false); setRoutineMember(null) }}
+          onEdit={() => { setShowRoutineViewer(false); setShowRoutineBuilder(true) }}
+        />
+      )}
+
+      {showRoutineBuilder && routineMember && (
+        <RoutineBuilder
+          member={routineMember}
+          onClose={() => { setShowRoutineBuilder(false); setRoutineMember(null) }}
+          onSaved={() => { fetchData() }}
+        />
       )}
     </div>
   )
