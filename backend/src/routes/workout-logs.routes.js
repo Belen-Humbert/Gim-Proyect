@@ -6,7 +6,7 @@ const { authenticate } = require('../middlewares/auth.middleware')
 
 const prisma = new PrismaClient()
 
-// GET /api/workout-logs/:userId — Obtener logs de un usuario
+// GET /api/workout-logs/:userId
 router.get('/:userId', authenticate, async (req, res) => {
   try {
     const logs = await prisma.freeWorkoutLog.findMany({
@@ -20,7 +20,7 @@ router.get('/:userId', authenticate, async (req, res) => {
   }
 })
 
-// POST /api/workout-logs/free — Crear log de entrenamiento libre
+// POST /api/workout-logs/free — Crear
 router.post('/free', authenticate, async (req, res) => {
   try {
     const { date, dayName, duration, exercises } = req.body
@@ -37,6 +37,37 @@ router.post('/free', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ success: false, message: 'Error al guardar entrenamiento' })
+  }
+})
+
+// PATCH /api/workout-logs/free/:id — Editar
+router.patch('/free/:id', authenticate, async (req, res) => {
+  try {
+    const { date, dayName, duration, exercises } = req.body
+    const log = await prisma.freeWorkoutLog.update({
+      where: { id: req.params.id },
+      data: {
+        date: date ? new Date(date) : undefined,
+        dayName: dayName ?? undefined,
+        duration: duration ? parseInt(duration) : undefined,
+        exercises: exercises ?? undefined,
+      }
+    })
+    res.json({ success: true, data: log })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ success: false, message: 'Error al actualizar entrenamiento' })
+  }
+})
+
+// DELETE /api/workout-logs/free/:id — Eliminar
+router.delete('/free/:id', authenticate, async (req, res) => {
+  try {
+    await prisma.freeWorkoutLog.delete({ where: { id: req.params.id } })
+    res.json({ success: true, message: 'Entrenamiento eliminado' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ success: false, message: 'Error al eliminar entrenamiento' })
   }
 })
 

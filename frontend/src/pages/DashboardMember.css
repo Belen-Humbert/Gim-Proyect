@@ -128,3 +128,43 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+/* ── Log actions ── */
+.mb-log-actions { display: flex; gap: 8px; align-items: center; }
+.mb-log-btn {
+  position: relative;
+  width: 36px; height: 36px;
+  border: none; border-radius: 8px;
+  font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.mb-log-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.mb-log-btn.edit { background: #e8f5e9; color: #2e7d32; }
+.mb-log-btn.delete { background: #fce4ec; color: #c62828; }
+
+.mb-log-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%; transform: translateX(-50%);
+  background: #0a1628; color: #fff;
+  font-size: 11px; font-weight: 600;
+  padding: 4px 8px; border-radius: 6px;
+  white-space: nowrap; opacity: 0;
+  pointer-events: none; transition: opacity 0.15s;
+}
+.mb-log-btn:hover::after { opacity: 1; }
+
+/* ── Modal sm ── */
+.mb-modal.sm { max-width: 420px; }
+
+/* ── Danger button ── */
+.mb-btn-danger {
+  padding: 10px 20px; background: #e53935;
+  color: #fff; border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.mb-btn-danger:hover:not(:disabled) { opacity: 0.88; }
+.mb-btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
