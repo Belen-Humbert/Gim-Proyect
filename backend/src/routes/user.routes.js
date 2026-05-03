@@ -9,7 +9,7 @@ const { isSuperAdmin, isTrainer } = require('../middlewares/roles.middleware');
 const prisma = new PrismaClient();
 
 // GET /api/users — Super Admin: listar todos los usuarios
-router.get('/', authenticate, isSuperAdmin, async (req, res) => {
+router.get('/', authenticate, isTrainer, async (req, res) => {
   try {
     const { role, isActive } = req.query;
 

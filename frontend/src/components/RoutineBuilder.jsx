@@ -1,5 +1,5 @@
 // frontend/src/components/RoutineBuilder.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import api from '../services/api'
 import './RoutineBuilder.css'
 
@@ -12,7 +12,44 @@ const RoutineBuilder = ({ member, onClose, onSaved }) => {
   const [days, setDays] = useState([emptyDay(1)])
   const [activeDay, setActiveDay] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [loadingExisting, setLoadingExisting] = useState(true)
   const [error, setError] = useState('')
+
+  // Cargar rutina existente al abrir
+  useEffect(() => {
+    const fetchExisting = async () => {
+      try {
+        const res = await api.get(`/routines/member/${member.id}`)
+        const routine = res.data.data
+        if (routine) {
+          setRoutineName(routine.name)
+          setDescription(routine.description || '')
+          if (routine.days && routine.days.length > 0) {
+            setDays(routine.days.map(d => ({
+              dayNumber: d.dayNumber,
+              name: d.name,
+              description: d.description || '',
+              exercises: d.exercises.length > 0
+                ? d.exercises.map(ex => ({
+                    name: ex.name,
+                    sets: ex.sets?.toString() || '',
+                    reps: ex.reps || '',
+                    weight: ex.weight || '',
+                    restSeconds: ex.restSeconds?.toString() || '',
+                    notes: ex.notes || '',
+                  }))
+                : [emptyExercise()]
+            })))
+          }
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoadingExisting(false)
+      }
+    }
+    fetchExisting()
+  }, [member.id])
 
   // ── Días ──
   const addDay = () => {
@@ -23,7 +60,11 @@ const RoutineBuilder = ({ member, onClose, onSaved }) => {
 
   const removeDay = (index) => {
     if (days.length === 1) return
-    const updated = days.filter((_, i) => i !== index).map((d, i) => ({ ...d, dayNumber: i + 1, name: d.name.startsWith('Día ') ? `Día ${i + 1}` : d.name }))
+    const updated = days.filter((_, i) => i !== index).map((d, i) => ({
+      ...d,
+      dayNumber: i + 1,
+      name: d.name.startsWith('Día ') ? `Día ${i + 1}` : d.name
+    }))
     setDays(updated)
     setActiveDay(Math.min(activeDay, updated.length - 1))
   }
@@ -54,44 +95,49 @@ const RoutineBuilder = ({ member, onClose, onSaved }) => {
   }
 
   // ── Guardar ──
-const handleSave = async () => {
-  setError('')
-  if (!routineName.trim()) return setError('El nombre de la rutina es requerido')
-  for (const day of days) {
-    if (!day.name.trim()) return setError(`Falta el nombre de un día`)
-    for (const ex of day.exercises) {
-      if (!ex.name.trim()) return setError(`Falta el nombre de un ejercicio en ${day.name}`)
+  const handleSave = async () => {
+    setError('')
+    if (!routineName.trim()) return setError('El nombre de la rutina es requerido')
+    for (const day of days) {
+      if (!day.name.trim()) return setError(`Falta el nombre de un día`)
+      for (const ex of day.exercises) {
+        if (!ex.name.trim()) return setError(`Falta el nombre de un ejercicio en ${day.name}`)
+      }
+    }
+
+    setLoading(true)
+    try {
+      await api.post('/routines', { userId: member.id, name: routineName, description, days })
+      onSaved()
+      onClose()
+    } catch (err) {
+      setError(err.response?.data?.message || 'Error al guardar la rutina')
+    } finally {
+      setLoading(false)
     }
   }
 
-  setLoading(true)
-  try {
-    await api.post('/routines', { userId: member.id, name: routineName, description, days })
-    onSaved()
-    onClose()
-  } catch (err) {
-    setError(err.response?.data?.message || 'Error al guardar la rutina')
-  } finally {
-    setLoading(false)
-  }
-}
+  if (loadingExisting) return (
+    <div className="rb-overlay">
+      <div className="rb-modal" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ padding: 60, color: '#7a90b0' }}>Cargando rutina...</div>
+      </div>
+    </div>
+  )
 
   const currentDay = days[activeDay]
 
   return (
     <div className="rb-overlay" onClick={onClose}>
       <div className="rb-modal" onClick={e => e.stopPropagation()}>
-
-        {/* Header */}
         <div className="rb-header">
           <div>
-            <h2>Crear Rutina</h2>
+            <h2>Editar Rutina</h2>
             <p>Para: <strong>{member.firstName} {member.lastName}</strong></p>
           </div>
           <button className="rb-close" onClick={onClose}>✕</button>
         </div>
 
-        {/* Nombre de rutina */}
         <div className="rb-routine-info">
           <div className="rb-field">
             <label>Nombre de la rutina</label>
@@ -104,7 +150,6 @@ const handleSave = async () => {
         </div>
 
         <div className="rb-body">
-          {/* Panel de días */}
           <div className="rb-days-panel">
             <div className="rb-days-title">Días</div>
             {days.map((day, i) => (
@@ -118,24 +163,15 @@ const handleSave = async () => {
             <button className="rb-add-day" onClick={addDay}>+ Agregar día</button>
           </div>
 
-          {/* Panel de ejercicios */}
           <div className="rb-exercises-panel">
             <div className="rb-day-header">
               <div className="rb-field">
                 <label>Nombre del día</label>
-                <input
-                  value={currentDay.name}
-                  onChange={e => updateDay(activeDay, 'name', e.target.value)}
-                  placeholder="Ej: Día 1 - Pecho y Tríceps"
-                />
+                <input value={currentDay.name} onChange={e => updateDay(activeDay, 'name', e.target.value)} placeholder="Ej: Día 1 - Pecho y Tríceps" />
               </div>
               <div className="rb-field">
                 <label>Descripción del día (opcional)</label>
-                <input
-                  value={currentDay.description}
-                  onChange={e => updateDay(activeDay, 'description', e.target.value)}
-                  placeholder="Ej: Enfocado en empuje"
-                />
+                <input value={currentDay.description} onChange={e => updateDay(activeDay, 'description', e.target.value)} placeholder="Ej: Enfocado en empuje" />
               </div>
             </div>
 
