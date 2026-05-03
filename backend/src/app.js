@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const planRoutes = require('./routes/plans.routes');
 const routineRoutes = require('./routes/routine.routes');
+const workoutLogsRoutes = require('./routes/workout-logs.routes')
 
 const app = express();
 
@@ -26,7 +27,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/routines', routineRoutes);
-
+app.use('/api/workout-logs', workoutLogsRoutes)
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });

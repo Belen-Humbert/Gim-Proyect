@@ -9,10 +9,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─────────────────────────────────────────
-// ENUMS
-// ─────────────────────────────────────────
-
 enum Role {
   SUPER_ADMIN
   TRAINER
@@ -24,10 +20,6 @@ enum PlanStatus {
   EXPIRED
   CANCELLED
 }
-
-// ─────────────────────────────────────────
-// MODELS
-// ─────────────────────────────────────────
 
 model User {
   id           String   @id @default(uuid())
@@ -47,6 +39,7 @@ model User {
   userPlan        UserPlan?
   routines        Routine[]
   workoutLogs     WorkoutLog[]
+  freeWorkoutLogs FreeWorkoutLog[]
 
   @@map("users")
 }
@@ -101,14 +94,14 @@ model UserPlan {
 
 model Routine {
   id          String   @id @default(uuid())
-  userId      String   // miembro al que pertenece
+  userId      String
   name        String
   description String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   days        RoutineDay[]
 
   @@map("routines")
@@ -117,8 +110,8 @@ model Routine {
 model RoutineDay {
   id          String   @id @default(uuid())
   routineId   String
-  dayNumber   Int      // 1, 2, 3, 4...
-  name        String   // "Día 1 - Pecho y Tríceps"
+  dayNumber   Int
+  name        String
   description String?
   order       Int      @default(0)
   createdAt   DateTime @default(now())
@@ -135,8 +128,8 @@ model RoutineExercise {
   routineDayId String
   name         String
   sets         Int?
-  reps         String? // "10-12" o "Al fallo"
-  weight       String? // "20kg" o "Corporal"
+  reps         String?
+  weight       String?
   restSeconds  Int?
   notes        String?
   order        Int     @default(0)
@@ -159,6 +152,20 @@ model WorkoutLog {
 
   @@unique([userId, routineDayId])
   @@map("workout_logs")
+}
+
+model FreeWorkoutLog {
+  id          String   @id @default(uuid())
+  userId      String
+  date        DateTime
+  dayName     String?
+  duration    Int?
+  exercises   Json     @default("[]")
+  createdAt   DateTime @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("free_workout_logs")
 }
 
 model RefreshToken {

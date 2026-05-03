@@ -1,0 +1,130 @@
+/* frontend/src/pages/DashboardMember.css */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.mb-root { display: flex; min-height: 100vh; background: #f0f4ff; font-family: 'DM Sans', sans-serif; }
+
+.mb-loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f0f4ff; }
+.mb-spinner { width: 40px; height: 40px; border: 3px solid #dce8f8; border-top-color: #1a6bdb; border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+/* ── Sidebar ── */
+.mb-sidebar { width: 240px; background: #0a1628; display: flex; flex-direction: column; padding: 28px 0; position: fixed; top: 0; left: 0; bottom: 0; }
+.mb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px 32px; }
+.mb-logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #1a6bdb, #4fa3f7); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.mb-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: #fff; letter-spacing: 2px; }
+.mb-logo-text strong { color: #4fa3f7; }
+.mb-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
+.mb-nav-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: none; background: transparent; color: #7a90b0; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: background 0.2s, color 0.2s; text-align: left; }
+.mb-nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.mb-nav-item.active { background: rgba(26,107,219,0.2); color: #4fa3f7; }
+.mb-sidebar-footer { padding: 20px 16px 0; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 12px; }
+.mb-user-info { display: flex; align-items: center; gap: 10px; }
+.mb-user-name { font-size: 13px; font-weight: 600; color: #fff; }
+.mb-user-role { font-size: 11px; color: #4fa3f7; }
+.mb-logout { width: 100%; padding: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #7a90b0; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.mb-logout:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.mb-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #1a6bdb, #4fa3f7); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+
+/* ── Main ── */
+.mb-main { margin-left: 240px; flex: 1; padding: 32px; min-height: 100vh; }
+.mb-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+.mb-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: #0a1628; letter-spacing: 1px; }
+.mb-subtitle { font-size: 14px; color: #7a90b0; margin-top: 2px; }
+
+/* ── Botones ── */
+.mb-btn-primary { padding: 10px 20px; background: linear-gradient(135deg, #1a6bdb, #4fa3f7); color: #fff; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 14px rgba(26,107,219,0.3); transition: opacity 0.2s; }
+.mb-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.mb-btn-secondary { padding: 10px 20px; background: transparent; color: #4a6080; border: 1.5px solid #dce8f8; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; }
+
+/* ── Plan cards ── */
+.mb-plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.mb-plan-card { background: linear-gradient(135deg, #0a1628, #1a3a6e); border-radius: 14px; padding: 28px; display: flex; flex-direction: column; gap: 12px; }
+.mb-plan-card.main { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; }
+.mb-plan-name { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #fff; letter-spacing: 1px; }
+.mb-badge { padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+.mb-badge.active { background: #1ab594; color: #fff; }
+.mb-badge.expired { background: #e53935; color: #fff; }
+
+.mb-info-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(13,33,68,0.07); display: flex; flex-direction: column; gap: 6px; border-top: 3px solid #dce8f8; }
+.mb-info-card.warning { border-top-color: #f57c00; }
+.mb-info-card.expired { border-top-color: #e53935; }
+.mb-info-card.payment { border-top-color: #1a6bdb; }
+.mb-info-icon { font-size: 22px; }
+.mb-info-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #7a90b0; }
+.mb-info-value { font-size: 20px; font-weight: 700; color: #0a1628; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.5px; }
+.mb-info-note { font-size: 12px; color: #f57c00; font-weight: 500; }
+.mb-info-note.expired { color: #e53935; }
+
+/* ── Empty ── */
+.mb-empty-plan { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(13,33,68,0.07); }
+.mb-empty-icon { font-size: 48px; }
+.mb-empty-plan h3 { font-size: 18px; font-weight: 700; color: #0a1628; }
+.mb-empty-plan p { font-size: 14px; color: #7a90b0; text-align: center; }
+
+/* ── Routine days ── */
+.mb-routine-days { display: flex; flex-direction: column; gap: 16px; }
+.mb-day-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 12px rgba(13,33,68,0.07); border: 2px solid transparent; transition: border-color 0.2s; }
+.mb-day-card.completed { border-color: #1ab594; }
+.mb-day-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: linear-gradient(135deg, #0a1628, #1a3a6e); }
+.mb-day-info { display: flex; align-items: center; gap: 10px; }
+.mb-day-badge { background: #1a6bdb; color: #fff; font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 1px; padding: 4px 10px; border-radius: 6px; }
+.mb-day-name { font-weight: 600; font-size: 15px; color: #fff; }
+.mb-check-btn { padding: 8px 16px; border: 2px solid rgba(255,255,255,0.3); background: transparent; color: #fff; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+.mb-check-btn:hover { background: rgba(255,255,255,0.1); }
+.mb-check-btn.checked { background: #1ab594; border-color: #1ab594; }
+.mb-check-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.mb-completed-date { padding: 8px 20px; background: #e8faf5; font-size: 13px; color: #0d7a5f; font-weight: 500; }
+.mb-day-desc { padding: 10px 20px; font-size: 13px; color: #7a90b0; background: #f8faff; border-bottom: 1px solid #f0f4ff; }
+
+/* ── Exercises ── */
+.mb-exercises { padding: 12px 20px; display: flex; flex-direction: column; gap: 10px; }
+.mb-exercise { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f4ff; }
+.mb-exercise:last-child { border-bottom: none; }
+.mb-ex-num { width: 26px; height: 26px; min-width: 26px; background: #f0f4ff; color: #1a6bdb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.mb-ex-body { flex: 1; }
+.mb-ex-name { font-weight: 600; font-size: 14px; color: #0a1628; margin-bottom: 6px; }
+.mb-ex-details { display: flex; flex-wrap: wrap; gap: 8px; }
+.mb-ex-details span { background: #f0f4ff; color: #4a6080; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.mb-ex-notes { margin-top: 6px; font-size: 12px; color: #7a90b0; font-style: italic; }
+
+/* ── Free logs ── */
+.mb-free-logs { display: flex; flex-direction: column; gap: 14px; }
+.mb-free-log-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(13,33,68,0.07); }
+.mb-free-log-header { padding: 16px 20px; background: linear-gradient(135deg, #0a1628, #1a3a6e); }
+.mb-free-log-title { font-weight: 700; font-size: 15px; color: #fff; }
+.mb-free-log-date { font-size: 12px; color: #7a90b0; margin-top: 2px; color: rgba(255,255,255,0.6); }
+
+/* ── History ── */
+.mb-history-list { display: flex; flex-direction: column; gap: 10px; }
+.mb-history-item { background: #fff; border-radius: 10px; padding: 16px 20px; box-shadow: 0 2px 8px rgba(13,33,68,0.06); display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #1a6bdb; }
+.mb-history-day { font-weight: 600; font-size: 15px; color: #0a1628; }
+.mb-history-date { font-size: 13px; color: #7a90b0; }
+
+/* ── Modal ── */
+.mb-overlay { position: fixed; inset: 0; background: rgba(10,22,40,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+.mb-modal { background: #fff; border-radius: 16px; width: 100%; max-width: 620px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 24px 80px rgba(10,22,40,0.3); animation: modalIn 0.25s ease; overflow: hidden; }
+.mb-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 24px 28px; border-bottom: 1px solid #f0f4ff; flex-shrink: 0; }
+.mb-modal-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #0a1628; letter-spacing: 1px; }
+.mb-modal-close { width: 32px; height: 32px; background: #f0f4ff; border: none; border-radius: 8px; color: #4a6080; font-size: 14px; cursor: pointer; }
+.mb-modal-body { overflow-y: auto; padding: 20px 28px; display: flex; flex-direction: column; gap: 14px; }
+.mb-modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 28px; border-top: 1px solid #f0f4ff; background: #f8faff; flex-shrink: 0; }
+
+.mb-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.mb-form-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.mb-form-field { display: flex; flex-direction: column; gap: 6px; }
+.mb-form-field.full { grid-column: 1 / -1; }
+.mb-form-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #4a6080; }
+.mb-form-field input { padding: 10px 12px; border: 1.5px solid #dce8f8; border-radius: 8px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: #0a1628; background: #f5f9ff; outline: none; transition: border-color 0.2s; }
+.mb-form-field input:focus { border-color: #1a6bdb; background: #fff; }
+
+.mb-exercises-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #4a6080; }
+.mb-exercise-form { display: flex; align-items: flex-start; gap: 10px; background: #f8faff; border-radius: 10px; padding: 12px; border: 1px solid #e8f0fe; }
+.mb-ex-form-fields { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.mb-add-ex { padding: 10px; background: transparent; border: 1.5px dashed #b0c4de; border-radius: 8px; color: #1a6bdb; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.2s; }
+.mb-add-ex:hover { background: #e8f0fe; }
+.mb-remove-ex { background: none; border: none; cursor: pointer; font-size: 16px; opacity: 0.5; padding: 4px; }
+.mb-remove-ex:hover { opacity: 1; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }

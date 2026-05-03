@@ -8,7 +8,7 @@ const { isSuperAdmin, isTrainer } = require('../middlewares/roles.middleware');
 
 const prisma = new PrismaClient();
 
-// GET /api/users — Super Admin: listar todos los usuarios
+// GET /api/users — Listar todos los usuarios
 router.get('/', authenticate, isTrainer, async (req, res) => {
   try {
     const { role, isActive } = req.query;
@@ -38,12 +38,13 @@ router.get('/', authenticate, isTrainer, async (req, res) => {
 
     res.json({ success: true, data: users });
   } catch (err) {
+    console.error('Error GET usuarios:', err);
     res.status(500).json({ success: false, message: 'Error al obtener usuarios' });
   }
 });
 
-// GET /api/users/:id — Ver usuario específico
-router.get('/:id', authenticate, isTrainer, async (req, res) => {
+// GET /api/users/:id — Ver usuario específico (cualquier usuario autenticado)
+router.get('/:id', authenticate, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.params.id },
@@ -52,15 +53,25 @@ router.get('/:id', authenticate, isTrainer, async (req, res) => {
         email: true,
         firstName: true,
         lastName: true,
-         dni: true,
+        dni: true,
         role: true,
         isActive: true,
         phone: true,
         createdAt: true,
         userPlan: { include: { plan: true } },
-        userRoutines: {
+        routines: {
           where: { isActive: true },
-          include: { routine: { include: { exercises: true } } }
+          include: {
+            days: {
+              orderBy: { dayNumber: 'asc' },
+              include: {
+                exercises: { orderBy: { order: 'asc' } },
+                workoutLogs: {
+                  where: { userId: req.params.id }
+                }
+              }
+            }
+          }
         }
       }
     });
@@ -71,6 +82,7 @@ router.get('/:id', authenticate, isTrainer, async (req, res) => {
 
     res.json({ success: true, data: user });
   } catch (err) {
+    console.error('Error GET usuario:', err);
     res.status(500).json({ success: false, message: 'Error al obtener usuario' });
   }
 });
@@ -85,13 +97,27 @@ router.patch('/:id', authenticate, isSuperAdmin, async (req, res) => {
       data: { firstName, lastName, phone, dni, isActive },
       select: {
         id: true, email: true, firstName: true,
-        lastName: true, role: true, isActive: true
+        lastName: true, dni: true, role: true, isActive: true, phone: true
       }
     });
 
     res.json({ success: true, message: 'Usuario actualizado', data: user });
   } catch (err) {
+    if (err.code === 'P2002') {
+      return res.status(409).json({ success: false, message: 'El DNI ingresado ya pertenece a otro usuario' });
+    }
     res.status(500).json({ success: false, message: 'Error al actualizar usuario' });
+  }
+});
+
+// DELETE /api/users/:id — Eliminar usuario (Super Admin)
+router.delete('/:id', authenticate, isSuperAdmin, async (req, res) => {
+  try {
+    await prisma.user.delete({ where: { id: req.params.id } });
+    res.json({ success: true, message: 'Usuario eliminado correctamente' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Error al eliminar usuario' });
   }
 });
 
@@ -101,10 +127,7 @@ router.post('/:id/plan', authenticate, isSuperAdmin, async (req, res) => {
     const { planId, startDate, paidAt, notes } = req.body;
 
     if (!planId || !startDate) {
-      return res.status(400).json({
-        success: false,
-        message: 'planId y startDate son requeridos'
-      });
+      return res.status(400).json({ success: false, message: 'planId y startDate son requeridos' });
     }
 
     const plan = await prisma.plan.findUnique({ where: { id: planId } });
@@ -116,7 +139,6 @@ router.post('/:id/plan', authenticate, isSuperAdmin, async (req, res) => {
     const end = new Date(start);
     end.setDate(end.getDate() + plan.durationDays);
 
-    // Upsert: crear o actualizar plan del usuario
     const userPlan = await prisma.userPlan.upsert({
       where: { userId: req.params.id },
       update: {
@@ -143,15 +165,6 @@ router.post('/:id/plan', authenticate, isSuperAdmin, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Error al asignar plan' });
-  }
-});
-
-router.delete('/:id', authenticate, isSuperAdmin, async (req, res) => {
-  try {
-    await prisma.user.delete({ where: { id: req.params.id } });
-    res.json({ success: true, message: 'Usuario eliminado correctamente' });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Error al eliminar usuario' });
   }
 });
 
