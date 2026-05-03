@@ -196,3 +196,104 @@
   overflow-y: auto;
   flex: 1;
 }
+
+/* ── Action buttons mejorados ── */
+.sa-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sa-btn-action {
+  position: relative;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.sa-btn-action:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* Tooltip */
+.sa-btn-action::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0a1628;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  letter-spacing: 0.3px;
+  z-index: 10;
+}
+
+.sa-btn-action::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #0a1628;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+
+.sa-btn-action:hover::after,
+.sa-btn-action:hover::before {
+  opacity: 1;
+}
+
+.sa-btn-action.edit    { background: #e8f5e9; color: #2e7d32; }
+.sa-btn-action.plan    { background: #e3f2fd; color: #1565c0; font-size: 13px; }
+.sa-btn-action.routine { background: #f3e5f5; color: #7b1fa2; }
+.sa-btn-action.history { background: #e8eaf6; color: #3949ab; }
+.sa-btn-action.reset   { background: #fff8e1; color: #f57f17; }
+.sa-btn-action.deactivate { background: #fce4ec; color: #c62828; }
+.sa-btn-action.activate   { background: #e8f5e9; color: #2e7d32; }
+.sa-btn-action.delete  { background: #fce4ec; color: #c62828; }
+
+
+/* ── Fix acciones en modal stat ── */
+.sa-stat-detail-body .sa-actions {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.sa-stat-detail-body .sa-btn-action {
+  min-width: 32px;
+  min-height: 32px;
+  font-size: 14px;
+  padding: 5px 8px;
+}
+
+.sa-stat-detail-body .sa-table td {
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+.sa-modal.stat-detail {
+  max-width: 1100px;
+}

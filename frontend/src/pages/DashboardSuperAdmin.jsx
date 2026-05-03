@@ -194,13 +194,13 @@ const DashboardSuperAdmin = () => {
         <td>
           <div className="sa-actions">
             {!isTrainer && <>
-              <button className="sa-btn-action edit" onClick={() => { setEditForm({ id: u.id, firstName: u.firstName, lastName: u.lastName, dni: u.dni || '', phone: u.phone || '' }); setShowEditModal(true) }}>✏️</button>
-              <button className="sa-btn-action plan" onClick={() => { setSelectedUser(u); setPlanForm({ planId: '', startDate: '' }); setShowPlanModal(true) }}>💳 Plan</button>
-              <button className="sa-btn-action routine" onClick={() => { setRoutineMember(u); setShowRoutineViewer(true) }}>🏋️</button>
+              <button data-tooltip="Editar" className="sa-btn-action edit" onClick={() => { setEditForm({ id: u.id, firstName: u.firstName, lastName: u.lastName, dni: u.dni || '', phone: u.phone || '' }); setShowEditModal(true) }}>✏️</button>
+              <button data-tooltip="Asignar plan" className="sa-btn-action plan" onClick={() => { setSelectedUser(u); setPlanForm({ planId: '', startDate: '' }); setShowPlanModal(true) }}>💳</button>
+              <button data-tooltip="Rutina" className="sa-btn-action routine" onClick={() => { setRoutineMember(u); setShowRoutineViewer(true) }}>🏋️</button>
             </>}
-            <button className="sa-btn-action reset" onClick={() => { setResetUser(u); setShowResetModal(true) }}>🔑</button>
-            <button className={`sa-btn-action ${u.isActive ? 'deactivate' : 'activate'}`} onClick={() => toggleActive(u)}>{u.isActive ? '🔒' : '✅'}</button>
-            <button className="sa-btn-action delete" onClick={() => { setDeleteUser(u); setShowDeleteModal(true) }}>🗑️</button>
+            <button data-tooltip="Resetear clave" className="sa-btn-action reset" onClick={() => { setResetUser(u); setShowResetModal(true) }}>🔑</button>
+            <button data-tooltip={u.isActive ? 'Desactivar' : 'Activar'} className={`sa-btn-action ${u.isActive ? 'deactivate' : 'activate'}`} onClick={() => toggleActive(u)}>{u.isActive ? '🔒' : '✅'}</button>
+            <button data-tooltip="Eliminar" className="sa-btn-action delete" onClick={() => { setDeleteUser(u); setShowDeleteModal(true) }}>🗑️</button>
           </div>
         </td>
       </tr>
